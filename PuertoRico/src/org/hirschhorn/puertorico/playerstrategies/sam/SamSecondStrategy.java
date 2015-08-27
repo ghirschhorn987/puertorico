@@ -1,11 +1,14 @@
 package org.hirschhorn.puertorico.playerstrategies.sam;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import org.hirschhorn.puertorico.Player;
+import org.hirschhorn.puertorico.Rules;
 import org.hirschhorn.puertorico.actions.SettlerAction;
 import org.hirschhorn.puertorico.constants.Building;
 import org.hirschhorn.puertorico.constants.BuildingType;
@@ -17,6 +20,9 @@ import org.hirschhorn.puertorico.playerstrategies.RandomRolePlayerStrategy;
 
 public class SamSecondStrategy extends RandomRolePlayerStrategy {
 
+  private Rules rules = new Rules();
+  private Good plantationToBuyAfterChoosingSettler = null;
+  
   @Override
   public SettlerAction doSettler(GameState gameState,
       Set<Good> plantationsAllowedToChoose, boolean allowedToChooseQuarry,
@@ -26,14 +32,16 @@ public class SamSecondStrategy extends RandomRolePlayerStrategy {
     if (allowedToUseHaciendaBuildingToGetExtraPlantation == true) {
       usingHacienda = true;
     }
+    if (gameState.getCurrentPlayerToDoAction().equals(gameState.getCurrentPlayerToChooseRole())) {
+      return new SettlerAction(plantationToBuyAfterChoosingSettler, false, usingHacienda);
+    }
     List<Good> prioritizedPlantations = new ArrayList<>();
     prioritizedPlantations.add(Good.Corn);
-    if (plantationsAllowedToChoose.contains(Good.Corn)){
+    if (plantationsAllowedToChoose.contains(Good.Corn)) {
       chosenPlantation = Good.Corn;
     } else {
       chosenPlantation = plantationsAllowedToChoose.iterator().next();
     }
-    
     return new SettlerAction(chosenPlantation, false, usingHacienda);
   }
 
@@ -74,7 +82,7 @@ public class SamSecondStrategy extends RandomRolePlayerStrategy {
             }
           }
         }
-        if (plantationCount > buildingCount) {
+        if (plantationCount > buildingCount && productionBuildingIsAvailable(gameState, plantation)) {
           return true;
         }
       }
@@ -83,6 +91,16 @@ public class SamSecondStrategy extends RandomRolePlayerStrategy {
   }
 
   
+  private boolean productionBuildingIsAvailable(GameState gameState, Good plantation) {
+    for (BuildingType buildingType : rules.getBuildingsAllowedToBuy(gameState, gameState.getCurrentPlayerToChooseRole())){
+      Building building = Building.getBuildingFromType(buildingType);
+      if (building.isProduction() && building.getProductionGood().equals(plantation)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   private boolean hasTheMostGoods(GameState gameState) {
     int mostGoods = gameState.getPlayerState(gameState.getPlayersStartingAtCurrentPlayerToChooseRole().get(0)).getGoods().size();
     Player playerWithMostGoods = gameState.getPlayersStartingAtCurrentPlayerToChooseRole().get(0);
@@ -99,12 +117,12 @@ public class SamSecondStrategy extends RandomRolePlayerStrategy {
   }
 
   private boolean canProduceTheMostGoods(GameState gameState) {
-    int mostGoods = getGoodsAbleToProduce(gameState, gameState.getPlayersStartingAtCurrentPlayerToChooseRole().get(0)).size();
+    int mostGoods = rules.getGoodsAbleToProduce(gameState, gameState.getPlayersStartingAtCurrentPlayerToChooseRole().get(0)).size();
     Player playerWithMostGoods = gameState.getPlayersStartingAtCurrentPlayerToChooseRole().get(0);
     for (int x = 0; x < gameState.getPlayersStartingAtCurrentPlayerToChooseRole().size(); x++){
       Player player = gameState.getPlayersStartingAtCurrentPlayerToChooseRole().get(x);
-      if (getGoodsAbleToProduce(gameState, player).size() > mostGoods) {
-        mostGoods = getGoodsAbleToProduce(gameState, player).size();
+      if (rules.getGoodsAbleToProduce(gameState, player).size() > mostGoods) {
+        mostGoods = rules.getGoodsAbleToProduce(gameState, player).size();
         playerWithMostGoods = player;
       }
     }
@@ -112,30 +130,6 @@ public class SamSecondStrategy extends RandomRolePlayerStrategy {
       return true;
     }
     return false;
-  }
-  
-  private List<Good> getGoodsAbleToProduce(GameState gameState, Player player) {
-    List<Good> plantations = new ArrayList<>(gameState.getPlayerState(player).getOccupiedPlantations()); 
-    List<Good> goods = new ArrayList<>();
-    for (BuildingType buildingType : gameState.getPlayerState(player).getOccupiedBuildings()) {
-      Building building = Building.getBuildingFromType(buildingType);
-      if (building.isProduction()) {
-        int colonists = gameState.getOccupiedColonistCount(buildingType, player);
-        Good good = building.getProductionGood();
-        int plantationsOfSpecificGood = gameState.getOccupiedPlantationCount(good, plantations);
-        int goodsAbleToProduce = Math.min(plantationsOfSpecificGood, colonists);
-        for (int x=0; x < goodsAbleToProduce; x++) {
-          goods.add(good);
-          plantations.remove(good);
-        }
-      } 
-    }
-    for (Good good : gameState.getPlayerState(player).getOccupiedPlantations()) {
-      if (good.equals(Good.Corn)) {
-        goods.add(good);
-      }
-    }
-    return goods;
   }
 
   private Role roleWithMostMoney(GameState gameState, List<Role> availableRoles) {
@@ -152,11 +146,40 @@ public class SamSecondStrategy extends RandomRolePlayerStrategy {
   }
 
   private boolean canImproveGoodProductionWithSettler(GameState gameState) {
+    PlayerState playerState = gameState.getPlayerState(gameState.getCurrentPlayerToChooseRole());
     if (gameState.getUncoveredPlantations().contains(Good.Corn)){
       return true;
     }
-    // TODO also add if have building but no plantation
+    for (Good plantation : getListOfGoodsInGameWithoutCorn()) {
+        int buildingCount = 0;
+        int plantationCount = Collections.frequency(playerState.getAllPlantations(), plantation);
+        for (BuildingType buildingType : playerState.getAllBuildings()) {
+          Building building = Building.getBuildingFromType(buildingType);
+          if (building.isProduction() && building.getProductionGood().equals(plantation)) {
+            if (building.isLargeProductionBuilding() && !building.getProductionGood().equals(Good.Coffee)) {
+               buildingCount =+ 3;
+            } else if (building.isLargeProductionBuilding() && building.getProductionGood().equals(Good.Coffee)){
+               buildingCount =+ 2;
+            } else {
+               buildingCount =+1;
+            }
+          }
+        }
+        if (buildingCount > plantationCount && gameState.getUncoveredPlantations().contains(plantation)) {
+          plantationToBuyAfterChoosingSettler = plantation;
+          return true;
+        }
+      } 
     return false;
+  }
+
+  private List<Good> getListOfGoodsInGameWithoutCorn() {
+    List<Good> goods = Arrays.asList(
+    Good.Indigo,
+    Good.Sugar,
+    Good.Tobacco,
+    Good.Coffee);
+    return goods;
   }
   
 

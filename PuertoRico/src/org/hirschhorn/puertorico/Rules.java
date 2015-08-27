@@ -180,7 +180,7 @@ public class Rules {
     gameState.transferGoodsFromPlayerToSupply(player, goodsToTransfer);
   }
 
-  private List<Good> getGoodsAbleToProduce(GameState gameState, Player player) {
+  public List<Good> getGoodsAbleToProduce(GameState gameState, Player player) {
     List<Good> plantations = new ArrayList<>(gameState.getPlayerState(player).getOccupiedPlantations()); 
     List<Good> goods = new ArrayList<>();
     for (BuildingType buildingType : gameState.getPlayerState(player).getOccupiedBuildings()) {

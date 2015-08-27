@@ -56,11 +56,11 @@ public class GameExecutor {
       logger.fine("====\nStarting round " + round);
       playRound();
       
-      if (round == 8) {
+      if (round == 12) {
         for (Player player : gameState.getPlayers()) {
           String strategyNameSimple = player.getStrategyNameSimple();
           int money = gameState.getPlayerStatistic(strategyNameSimple, Statistic.CumulativeMoneyReceived).intValue();
-          gameState.incrementPlayerStatistic(strategyNameSimple, Statistic.MoneyAfterRound8, money);
+          gameState.incrementPlayerStatistic(strategyNameSimple, Statistic.MoneyAfterRound12, money);
         }
       }
     }

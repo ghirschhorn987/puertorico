@@ -42,7 +42,7 @@ public class ResultsUI {
     LargeBuildingsOccupied,
     CumulativeMoneyReceived,
     CumulativeGoodsProduced,
-    MoneyAfterRound8,
+    MoneyAfterRound12,
   }
 
   public ResultsUI(List<GameResult> gameResults) {
@@ -85,11 +85,12 @@ public class ResultsUI {
         Statistic.CumulativeMoneyReceived,
         Statistic.LargeBuldings,
         Statistic.VictoryPointChips,
-        Statistic.MoneyAfterRound8,
+        Statistic.MoneyAfterRound12,
         Statistic.LargeBuildingsOccupied,        
         Statistic.VictoryPointBonus,
         Statistic.CumulativeGoodsProduced,
         Statistic.HasWharf,
+        Statistic.VictoryPoints,
         Statistic.HasHarbor
     );
     List<Statistic> allVariables = new ArrayList<>(fixedScaleVariables);

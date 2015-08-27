@@ -156,34 +156,34 @@ public class ZackStragety extends DefaultPlayerStrategy {
     return action;
   }
 
-  @Override
-  public BuilderAction doBuilder(GameState gameState,
-      Set<BuildingType> buildingsAllowedToBuy) {
-      BuildingType buildingType = null;
-      if (buildingsAllowedToBuy.contains(BuildingType.CustomsHouse)){
-        buildingType = BuildingType.CustomsHouse;
-      }
-      if (getActionPs(gameState).getAllBuildings().contains(BuildingType.CustomsHouse) && !buildingsAllowedToBuy.isEmpty()){
-        buildingType = buildingsAllowedToBuy.iterator().next();
-      }
-      BuilderAction action = new BuilderAction(buildingType);
-    return action;
-  }
-
 //  @Override
 //  public BuilderAction doBuilder(GameState gameState,
-//      Set<BuildingType> buildingsAllowedToBuy){
-//        BuildingType buildingToBuy = super.doBuilder(gameState, buildingsAllowedToBuy).getBuildingToBuy();
-//        if (buildingToBuy != null && Building.getBuildingFromType(buildingToBuy).getIslandSpacesFilled() == 2) {
-//          if (buildingsAllowedToBuy.contains(BuildingType.CustomsHouse)){
-//            buildingToBuy = BuildingType.CustomsHouse;
-//          }
-//        }
-//        BuilderAction action = new BuilderAction(buildingToBuy);
-//        return action;
+//      Set<BuildingType> buildingsAllowedToBuy) {
+//      BuildingType buildingType = null;
+//      if (buildingsAllowedToBuy.contains(BuildingType.CustomsHouse)){
+//        buildingType = BuildingType.CustomsHouse;
+//      }
+//      if (getActionPs(gameState).getAllBuildings().contains(BuildingType.CustomsHouse) && !buildingsAllowedToBuy.isEmpty()){
+//        buildingType = buildingsAllowedToBuy.iterator().next();
+//      }
+//      BuilderAction action = new BuilderAction(buildingType);
+//    return action;
 //  }
-//  
-//  
+
+  @Override
+  public BuilderAction doBuilder(GameState gameState,
+      Set<BuildingType> buildingsAllowedToBuy){
+        BuildingType buildingToBuy = super.doBuilder(gameState, buildingsAllowedToBuy).getBuildingToBuy();
+        if (buildingToBuy != null && Building.getBuildingFromType(buildingToBuy).getIslandSpacesFilled() == 2) {
+          if (buildingsAllowedToBuy.contains(BuildingType.CustomsHouse)){
+            buildingToBuy = BuildingType.CustomsHouse;
+          }
+        }
+        BuilderAction action = new BuilderAction(buildingToBuy);
+        return action;
+  }
+  
+  
   
   
   @Override

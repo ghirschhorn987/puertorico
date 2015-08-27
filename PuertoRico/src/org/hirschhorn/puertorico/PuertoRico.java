@@ -171,11 +171,11 @@ public class PuertoRico extends Application {
       if (playerStats != null) {
         cumulativeGoods = playerStats.getValue(Statistic.CumulativeGoodsProduced).intValue();
         cumulativeMoney = playerStats.getValue(Statistic.CumulativeMoneyReceived).intValue();
-        moneyAfterRound8 = playerStats.getValue(Statistic.MoneyAfterRound8).intValue();
+        moneyAfterRound8 = playerStats.getValue(Statistic.MoneyAfterRound12).intValue();
       }
       playerResult.setValue(ResultsUI.Statistic.CumulativeGoodsProduced, cumulativeGoods);        
       playerResult.setValue(ResultsUI.Statistic.CumulativeMoneyReceived, cumulativeMoney);        
-      playerResult.setValue(ResultsUI.Statistic.MoneyAfterRound8, moneyAfterRound8);
+      playerResult.setValue(ResultsUI.Statistic.MoneyAfterRound12, moneyAfterRound8);
       
       int victoryPoints = ps.getVictoryPoints();
       double victoryMarginPct;
